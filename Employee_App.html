@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#CC1F1F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Techpack">
+<meta http-equiv="Permissions-Policy" content="geolocation=(self)">
+<title>Techpack Attendance</title>
+<style>
+:root{--red:#CC1F1F;--rdk:#A01515;--rlt:#FDF0F0;--ylw:#F5C100;--blu:#2563EB;--blt:#DBEAFE;--grn:#16a34a;--glt:#DCFCE7;--bg:#EDEDED;--wh:#fff;--g1:#F5F5F5;--g2:#E6E6E6;--g3:#C4C4C4;--g4:#888;--g5:#333;--r:14px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100vh;color:var(--g5);padding-bottom:40px;-webkit-font-smoothing:antialiased}
+.hdr{background:var(--red);position:sticky;top:0;z-index:100;box-shadow:0 3px 16px rgba(0,0,0,.25)}
+.hdr-in{display:flex;align-items:center;gap:11px;padding:11px 16px;max-width:520px;margin:0 auto}
+.logo{width:44px;height:44px;border-radius:50%;background:var(--ylw);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bname{font-size:20px;font-weight:900;color:#fff;letter-spacing:1px;line-height:1}
+.bsub{font-size:9px;color:rgba(255,255,255,.72);margin-top:2px}
+.hclk{margin-left:auto;text-align:right}
+.htime{font-size:17px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
+.hdate{font-size:9px;color:rgba(255,255,255,.65);margin-top:1px}
+/* Open in new tab banner */
+.open-banner{background:#1a73e8;color:#fff;padding:12px 16px;text-align:center;font-size:13px;font-weight:600;display:none;cursor:pointer;line-height:1.5}
+.open-banner.show{display:block}
+.open-banner:active{opacity:.85}
+.wrap{max-width:520px;margin:0 auto;padding:14px 13px}
+.net{display:none;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;margin-bottom:12px;font-size:12px;font-weight:600}
+.net.show{display:flex}
+.net.ok{background:var(--glt);border:1px solid #86EFAC;color:#166534}
+.net.err{background:#FEF3C7;border:1px solid #FDE68A;color:#92400E}
+.net.saving{background:var(--blt);border:1px solid #93C5FD;color:#1D4ED8}
+.ndot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.net.ok .ndot{background:var(--grn)}.net.err .ndot{background:#F59E0B;animation:blink 1s infinite}.net.saving .ndot{background:var(--blu);animation:blink .5s infinite}
+@keyframes blink{50%{opacity:.2}}
+.loc-banner{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;margin-bottom:12px;font-size:13px;font-weight:700}
+.loc-banner.inside{background:var(--glt);border:1.5px solid #86EFAC;color:#166534}
+.loc-banner.outside{background:var(--rlt);border:1.5px solid #FCA5A5;color:var(--red)}
+.loc-banner.hidden{display:none}.loc-banner.guest{background:#FEF9C3;border:1.5px solid #F5C100;color:#92400E}
+.loc-ico{font-size:20px;flex-shrink:0}
+.loc-sub{font-size:11px;font-weight:400;margin-top:2px;opacity:.8}
+.sc{background:var(--wh);border-radius:var(--r);box-shadow:0 2px 14px rgba(0,0,0,.09);padding:13px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;border-left:5px solid var(--g3)}
+.sc.present{border-left-color:var(--grn)}.sc.absent{border-left-color:var(--red)}.sc.done{border-left-color:var(--blu)}
+.sdot{width:12px;height:12px;border-radius:50%;flex-shrink:0;background:var(--g3)}
+.sdot.present{background:var(--grn);box-shadow:0 0 0 4px rgba(22,163,74,.18)}.sdot.absent{background:var(--red)}.sdot.done{background:var(--blu)}
+.slbl{font-size:13px;font-weight:700}.ssub{font-size:11px;color:var(--g4);margin-top:1px}
+.sbadge{margin-left:auto;padding:4px 11px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.5px;flex-shrink:0}
+.b-absent{background:var(--rlt);color:var(--red)}.b-present{background:var(--glt);color:var(--grn)}.b-done{background:var(--blt);color:var(--blu)}.b-late{background:#FEF9C3;color:#92400E}
+.tabs{display:flex;background:var(--wh);border-radius:var(--r);overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.09);margin-bottom:13px}
+.tab{flex:1;padding:12px 4px;border:none;background:none;font-size:12px;font-weight:700;cursor:pointer;color:var(--g4);border-bottom:3px solid transparent;transition:all .2s;font-family:inherit;-webkit-appearance:none}
+.tab.on{color:var(--red);border-bottom-color:var(--red);background:var(--rlt)}
+.pane{display:none}.pane.on{display:block}
+.card{background:var(--wh);border-radius:var(--r);box-shadow:0 2px 14px rgba(0,0,0,.09);padding:18px;margin-bottom:13px}
+.cttl{font-size:18px;font-weight:700;margin-bottom:3px}
+.csub{font-size:11px;color:var(--g4);margin-bottom:17px}
+.fld{margin-bottom:14px}
+.lbl{font-size:10px;font-weight:800;color:var(--g4);display:flex;align-items:center;gap:5px;margin-bottom:5px;letter-spacing:.5px;text-transform:uppercase}
+.req{color:var(--red)}
+.inp{width:100%;padding:12px 13px;border:1.5px solid var(--g2);border-radius:10px;font-size:16px;color:var(--g5);background:var(--g1);outline:none;-webkit-appearance:none;appearance:none;transition:border .2s;font-family:inherit}
+.inp:focus{border-color:var(--red);background:var(--wh)}
+select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 7 6-7' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grow{display:flex;gap:8px}.grow .inp{flex:1}
+.gbtn{padding:12px 13px;border:1.5px solid var(--red);border-radius:10px;background:var(--rlt);color:var(--red);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-appearance:none;font-family:inherit;min-height:48px}
+.gbtn:active{background:var(--red);color:#fff}
+.gbox{margin-top:6px;padding:8px 11px;background:var(--g1);border-radius:8px;font-size:12px;color:var(--g4);display:none;align-items:center;gap:6px}
+.gbox.show{display:flex}.gdot{width:7px;height:7px;border-radius:50%;background:var(--grn);flex-shrink:0}
+.szn{border:2px dashed var(--g2);border-radius:11px;padding:20px 16px;text-align:center;cursor:pointer;background:var(--g1)}
+.szn:active{border-color:var(--red);background:var(--rlt)}
+.szico{font-size:30px;margin-bottom:6px}.sztxt{font-size:12px;color:var(--g4);font-weight:600}
+.szprev{width:76px;height:76px;border-radius:50%;object-fit:cover;border:3px solid var(--red);display:none;margin:0 auto 6px}
+.sbtn{width:100%;padding:15px;border:none;border-radius:11px;font-size:18px;font-weight:900;letter-spacing:1px;cursor:pointer;margin-top:4px;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;font-family:inherit}
+.sbtn.red{background:var(--red);color:#fff}.sbtn.blu{background:var(--blu);color:#fff}
+.sbtn:active{transform:scale(.98);opacity:.88}.sbtn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.spin{width:16px;height:16px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.alert{padding:13px 15px;border-radius:11px;margin-bottom:13px;display:none;align-items:flex-start;gap:10px}
+.alert.ok{background:var(--glt);border:1.5px solid #86EFAC}.alert.er{background:var(--rlt);border:1.5px solid #FCA5A5}
+.alert.on{display:flex}.aico{font-size:16px;flex-shrink:0;margin-top:1px}
+.attl{font-size:13px;font-weight:700}.amsg{font-size:11px;margin-top:2px;color:var(--g4)}
+.alert.ok .attl{color:var(--grn)}.alert.er .attl{color:var(--red)}
+.hbar{background:var(--g1);border-radius:10px;padding:12px 14px;margin-top:12px;display:none}
+.btr{height:8px;background:var(--g2);border-radius:4px;overflow:hidden;margin:6px 0 5px}
+.bfl{height:100%;background:linear-gradient(90deg,var(--red),var(--ylw));border-radius:4px;transition:width .7s}
+.hval{font-size:12px;font-weight:700;color:var(--red)}
+.hrow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:.5px solid var(--g2)}
+.hrow:last-child{border:none}.hd{font-size:13px;font-weight:600}.ht{font-size:11px;color:var(--g4);margin-top:1px}
+.hs{font-size:10px;font-weight:800;letter-spacing:.4px}.hs.p{color:var(--grn)}.hs.a{color:var(--red)}.hs.d{color:var(--blu)}
+.skel{background:linear-gradient(90deg,var(--g2) 25%,var(--g1) 50%,var(--g2) 75%);background-size:200%;animation:sk 1.4s infinite;border-radius:8px;height:44px;margin-bottom:8px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.szn.missing{border-color:var(--red);background:var(--rlt);animation:shake .4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.empty{text-align:center;padding:28px 16px;color:var(--g4);font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- OPEN IN NEW TAB BANNER — shown when inside Google Sites iframe -->
+<div class="open-banner" id="open-banner" onclick="openFullScreen()">
+  &#128205; Tap here to open the full attendance app (required for GPS to work)
+</div>
+
+<div class="hdr">
+  <div class="hdr-in">
+    <div class="logo">
+      <svg width="30" height="30" viewBox="0 0 34 34" fill="none">
+        <polygon points="9,14 13,14 13,9 11,9 14,5 17,9 15,9 15,14 19,14 19,28 9,28" fill="#2B5BA8"/>
+        <rect x="19" y="14" width="10" height="5" fill="#CC1F1F"/>
+        <rect x="25" y="19" width="4" height="4" fill="#CC1F1F"/>
+        <rect x="19" y="19" width="4" height="9" fill="#CC1F1F"/>
+      </svg>
+    </div>
+    <div><div class="bname">TECHPACK</div><div class="bsub">ATTENDANCE PORTAL</div></div>
+    <div class="hclk"><div class="htime" id="ct">--:--:--</div><div class="hdate" id="cd">---</div></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="net" id="net"><div class="ndot"></div><span id="net-txt">Connecting...</span></div>
+  <div class="loc-banner hidden" id="loc-banner">
+    <span class="loc-ico" id="loc-ico">&#128205;</span>
+    <div><div id="loc-txt">Checking location...</div><div class="loc-sub" id="loc-sub"></div></div>
+  </div>
+  <div class="sc" id="sc">
+    <div class="sdot" id="sdot"></div>
+    <div><div class="slbl" id="slbl">Not checked in today</div><div class="ssub" id="ssub">Use Check-In tab below</div></div>
+    <span class="sbadge b-absent" id="sbadge">ABSENT</span>
+  </div>
+  <div class="tabs">
+    <button class="tab on" onclick="sw('ci',this)">&#9728; Check-In</button>
+    <button class="tab" onclick="sw('co',this)">&#9790; Check-Out</button>
+    <button class="tab" onclick="sw('ht',this)">&#128203; History</button>
+  </div>
+
+  <div id="ci" class="pane on">
+    <div class="alert ok" id="ci-ok"><span class="aico">&#10003;</span><div><div class="attl">Check-in saved!</div><div class="amsg" id="ci-ok-m"></div></div></div>
+    <div class="alert er" id="ci-er"><span class="aico">&#10007;</span><div><div class="attl">Error</div><div class="amsg" id="ci-er-m"></div></div></div>
+    <div class="card">
+      <div class="cttl">Morning Check-In</div>
+      <div class="csub">GPS checks if you are at the work site</div>
+      <div class="fld r2">
+        <div><div class="lbl">Your Name <span class="req">&#9733;</span></div><input type="text" id="ci-emp" class="inp" placeholder="Type your full name" autocomplete="off" autocorrect="off" spellcheck="false"></div>
+        <div><div class="lbl">Time</div><input type="time" id="ci-time" class="inp"></div>
+      </div>
+      <div class="fld r2">
+        <div>
+          <div class="lbl">Role <span class="req">&#9733;</span></div>
+          <select id="ci-role" class="inp" onchange="onRoleChange()">
+            <option value="">Select role...</option>
+            <option value="employee">Employee</option>
+            <option value="candidate">Candidate / Visitor</option>
+          </select>
+        </div>
+        <div><div class="lbl">Work Site <span class="req">&#9733;</span></div>
+          <select id="ci-site" class="inp">
+            <option value="">Select your site...</option>
+            <option>NORTH 1</option><option>NORTH 2</option><option>NORTH 3</option><option>NORTH 4</option><option>NORTH 5</option><option>NORTH 6</option>
+            <option>SOUTH 1</option><option>SOUTH 3</option><option>SOUTH 4</option><option>SOUTH 5</option><option>SOUTH 6</option><option>SOUTH 7</option>
+            <option>HYD 1</option><option>CORPORATE</option><option>FACTORY</option>
+          </select>
+        </div>
+      </div>
+      <div id="ci-candidate-note" style="display:none;padding:9px 12px;background:#FEF9C3;border:1.5px solid #F5C100;border-radius:10px;font-size:12px;color:#92400E;font-weight:600;margin-bottom:10px">
+        ⚠️ Candidate / Visitor — GPS location will be recorded as <strong>Guest</strong>. Attendance marked PRESENT with manager notification.
+      </div>
+      <div class="fld">
+        <div class="lbl">GPS Location <span class="req">&#9733;</span></div>
+        <div class="grow">
+          <input type="text" id="ci-gps" class="inp" placeholder="Tap Capture button" readonly>
+          <button class="gbtn" onclick="capGPS('ci')">&#128205; Capture</button>
+        </div>
+        <div class="gbox" id="ci-gi"><div class="gdot" id="ci-gdot"></div><span id="ci-gt"></span></div>
+      </div>
+      <div class="fld">
+        <div class="lbl">Selfie Photo <span class="req">&#9733;</span> <span style="font-size:9px;color:var(--red);font-weight:700;text-transform:uppercase;letter-spacing:.3px">Required</span></div>
+        <div class="szn" id="ci-szn" onclick="document.getElementById('ci-fi').click()">
+          <img id="ci-pi" class="szprev">
+          <div id="ci-ph"><div class="szico">&#128247;</div><div class="sztxt">Tap to take selfie (mandatory)</div></div>
+        </div>
+        <input type="file" id="ci-fi" accept="image/*" capture="user" style="display:none" onchange="loadImg(this,'ci-pi','ci-ph')">
+      </div>
+      <button class="sbtn red" id="ci-btn" onclick="doCI()">SUBMIT CHECK-IN</button>
+    </div>
+  </div>
+
+  <div id="co" class="pane">
+    <div class="alert ok" id="co-ok"><span class="aico">&#10003;</span><div><div class="attl">Check-out saved!</div><div class="amsg" id="co-ok-m"></div></div></div>
+    <div class="alert er" id="co-er"><span class="aico">&#10007;</span><div><div class="attl">Error</div><div class="amsg" id="co-er-m"></div></div></div>
+    <div class="card">
+      <div class="cttl">Evening Check-Out</div>
+      <div class="csub">Submit tasks and close your day</div>
+      <div class="fld r2">
+        <div><div class="lbl">Your Name <span class="req">&#9733;</span></div><input type="text" id="co-emp" class="inp" placeholder="Type your full name" autocomplete="off" autocorrect="off" spellcheck="false"></div>
+        <div><div class="lbl">Time</div><input type="time" id="co-time" class="inp"></div>
+      </div>
+      <div class="fld">
+        <div class="lbl">GPS Location</div>
+        <div class="grow">
+          <input type="text" id="co-gps" class="inp" placeholder="Tap Capture" readonly>
+          <button class="gbtn" onclick="capGPS('co')">&#128205; Capture</button>
+        </div>
+        <div class="gbox" id="co-gi"><div class="gdot"></div><span id="co-gt"></span></div>
+      </div>
+      <div class="fld"><div class="lbl">Tasks Assigned</div><textarea id="co-ta" class="inp" rows="2" style="font-size:16px" placeholder="Tasks assigned today..."></textarea></div>
+      <div class="fld"><div class="lbl">Tasks Completed</div><textarea id="co-tc" class="inp" rows="2" style="font-size:16px" placeholder="What you completed..."></textarea></div>
+      <div class="fld"><div class="lbl">Notes</div><textarea id="co-nt" class="inp" rows="2" style="font-size:16px" placeholder="Any updates..."></textarea></div>
+      <div class="fld">
+        <div class="lbl">Selfie Photo <span class="req">&#9733;</span> <span style="font-size:9px;color:var(--red);font-weight:700;text-transform:uppercase;letter-spacing:.3px">Required</span></div>
+        <div class="szn" id="co-szn" onclick="document.getElementById('co-fi').click()">
+          <img id="co-pi" class="szprev">
+          <div id="co-ph"><div class="szico">&#128247;</div><div class="sztxt">Tap to take selfie (mandatory)</div></div>
+        </div>
+        <input type="file" id="co-fi" accept="image/*" capture="user" style="display:none" onchange="loadImg(this,'co-pi','co-ph')">
+      </div>
+      <div class="hbar" id="hbar">
+        <div style="font-size:11px;color:var(--g4)">Work hours today</div>
+        <div class="btr"><div class="bfl" id="bfl" style="width:0%"></div></div>
+        <div class="hval" id="hval">--</div>
+      </div>
+      <button class="sbtn blu" id="co-btn" onclick="doCO()">SUBMIT CHECK-OUT</button>
+    </div>
+  </div>
+
+  <div id="ht" class="pane">
+    <div class="card">
+      <div class="cttl">My Attendance History</div>
+      <div class="csub">Your records from Google Sheet</div>
+      <div class="fld"><div class="lbl">Your Name</div><div class="grow"><input type="text" id="ht-emp" class="inp" placeholder="Type your full name" autocomplete="off" autocorrect="off" spellcheck="false"><button class="gbtn" onclick="loadHist()">&#128269; Load</button></div></div>
+      <div id="ht-list"><div class="empty">Select your name to load history</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcT7p-T3CmhzSyjd1XOC1Xqt9EiA8TvCj1zJ34DAUXYxBQW4XiSBR6xe6lhpNKDopkcQ/exec";
+
+// ── ONE CHECK-IN / ONE CHECK-OUT PER DAY ──────────────────
+// Uses localStorage: key = tp_ci_NAME_DATE or tp_co_NAME_DATE
+function todayKey(){ return new Date().toISOString().split("T")[0]; }
+function alreadyCI(emp){ return !!localStorage.getItem("tp_ci_"+emp+"_"+todayKey()); }
+function alreadyCO(emp){ return !!localStorage.getItem("tp_co_"+emp+"_"+todayKey()); }
+function markCI(emp){ localStorage.setItem("tp_ci_"+emp+"_"+todayKey(),"1"); }
+function markCO(emp){ localStorage.setItem("tp_co_"+emp+"_"+todayKey(),"1"); }
+
+const WORK_ZONES = [
+  { name:"Factory",     lat:17.478559, lng:78.429926, radius:10 },
+  { name:"Corporate",   lat:17.478559, lng:78.429926, radius:10 },
+];
+const MAX_DIST = 500;
+
+// ── IFRAME DETECTION — Google Sites fix ────────────────────
+// Google Sites embeds the app in an iframe which blocks GPS
+// Solution: detect iframe → show banner → open app in new tab
+(function(){
+  const inIframe = (function(){
+    try{ return window.self !== window.top; }
+    catch(e){ return true; }
+  })();
+
+  if(inIframe){
+    // Show the blue banner at top asking user to open full screen
+    document.getElementById("open-banner").classList.add("show");
+    // Store current URL for the open button
+    window._pageURL = window.location.href;
+  }
+})();
+
+function openFullScreen(){
+  // Open this same page in a new tab — outside the iframe
+  // GPS works in new tab
+  const url = window._pageURL || window.location.href;
+  window.open(url, "_blank");
+}
+
+const pad = v => String(v).padStart(2,"0");
+const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MONS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+
+
+function tick(){
+  const n=new Date();
+  document.getElementById("ct").textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+  document.getElementById("cd").textContent=`${DAYS[n.getDay()]}, ${n.getDate()} ${MONS[n.getMonth()]} ${n.getFullYear()}`;
+  const t=`${pad(n.getHours())}:${pad(n.getMinutes())}`;
+  document.getElementById("ci-time").value=t;
+  document.getElementById("co-time").value=t;
+}
+setInterval(tick,1000);tick();
+
+function populateDropdowns(){
+  showNet("ok","Connected to Google Sheet ✓",true);
+}
+
+function showNet(type,msg,hide=false){
+  const el=document.getElementById("net"),tx=document.getElementById("net-txt");
+  el.className="net "+type+" show";tx.textContent=msg;
+  if(hide)setTimeout(()=>el.classList.remove("show"),3000);
+}
+
+function sw(id,btn){
+  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("on"));
+  document.querySelectorAll(".pane").forEach(p=>p.classList.remove("on"));
+  btn.classList.add("on");document.getElementById(id).classList.add("on");
+}
+
+function calcDist(lat1,lng1,lat2,lng2){
+  const R=6371000,dL=(lat2-lat1)*Math.PI/180,dG=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dL/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dG/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function checkZone(lat,lng){
+  let closest=null,minDist=Infinity;
+  for(const z of WORK_ZONES){
+    const d=Math.round(calcDist(lat,lng,z.lat,z.lng));
+    if(d<minDist){minDist=d;closest=z;}
+  }
+  return{inside:minDist<=MAX_DIST,zone:closest,distance:minDist};
+}
+
+function capGPS(p){
+  const inp=document.getElementById(p+"-gps");
+  const box=document.getElementById(p+"-gi");
+  const txt=document.getElementById(p+"-gt");
+  const dot=document.getElementById(p+"-gdot")||box.querySelector(".gdot");
+
+  if(!navigator.geolocation){
+    txt.textContent="GPS not available. Please use Chrome browser.";
+    box.classList.add("show");
+    return;
+  }
+
+  inp.value="Getting your location...";
+  box.classList.remove("show");
+
+  const tryGPS=(highAcc)=>{
+    navigator.geolocation.getCurrentPosition(
+      pos=>{
+        const lat=pos.coords.latitude, lng=pos.coords.longitude;
+        const acc=Math.round(pos.coords.accuracy);
+        inp.value=`${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        box.classList.add("show");
+        if(p==="ci"){
+          window._lat=lat;window._lng=lng;
+          const r=checkZone(lat,lng);
+          window._inZone=r.inside;window._zoneName=r.zone?r.zone.name:"";window._distance=r.distance;
+          window._guestLoc = !r.inside; // true = outside zone = guest location
+          if(r.inside){
+            // Inside work zone — PRESENT normal ✓
+            txt.textContent=`✓ At work site — ${r.zone.name} (${r.distance}m) — PRESENT`;
+            if(dot)dot.style.background="#16a34a";
+            showLocBanner("inside",r.zone.name,r.distance);
+          }else{
+            // Outside work zone but GPS captured — PRESENT with warning ⚠ (guest location)
+            txt.textContent=`⚠ Guest location — ${r.distance}m from ${r.zone?r.zone.name:""} — PRESENT with warning`;
+            if(dot)dot.style.background="#F5C100";
+            showLocBanner("guest",r.zone?r.zone.name:"",r.distance);
+          }
+        }else{
+          txt.textContent=`GPS confirmed: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${acc}m)`;
+        }
+      },
+      err=>{
+        if(highAcc&&err.code===3){tryGPS(false);return;}
+        inp.value="";
+        const msgs={1:"Location BLOCKED — tap lock icon in address bar → Allow",2:"Location unavailable — go outside and try again",3:"Timed out — try again"};
+        txt.textContent=msgs[err.code]||"Location error";
+        box.classList.add("show");
+        if(dot)dot.style.background="#F59E0B";
+        if(err.code===1){
+          const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+          if(isIOS) alert("iPhone: Settings → Privacy & Security → Location Services → Safari → While Using the App");
+          else alert("Android: Tap the lock icon 🔒 in Chrome address bar → Permissions → Location → Allow");
+        }
+      },
+      {enableHighAccuracy:highAcc,timeout:highAcc?15000:10000,maximumAge:highAcc?0:30000}
+    );
+  };
+  tryGPS(true);
+}
+
+function showLocBanner(type,zoneName,dist){
+  const b=document.getElementById("loc-banner");
+  const ico=document.getElementById("loc-ico");
+  if(type==="inside"){
+    b.className="loc-banner inside";
+    ico.textContent="✅";
+    document.getElementById("loc-txt").textContent="At work site — PRESENT ✓";
+    document.getElementById("loc-sub").textContent=`${zoneName} · ${dist}m away`;
+  }else if(type==="guest"){
+    b.className="loc-banner guest";
+    ico.textContent="⚠️";
+    document.getElementById("loc-txt").textContent="Guest location — PRESENT with warning ⚠";
+    document.getElementById("loc-sub").textContent=`${dist}m from ${zoneName} · location noted for manager`;
+  }else{
+    b.className="loc-banner outside";
+    ico.textContent="❌";
+    document.getElementById("loc-txt").textContent="Outside work zone — ABSENT ✗";
+    document.getElementById("loc-sub").textContent=`${dist}m from ${zoneName}`;
+  }
+}
+
+function loadImg(inp,imgId,phId){
+  const f=inp.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement("canvas"),MAX=500;
+      let w=img.width,h=img.height;if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
+      document.getElementById(imgId).src=c.toDataURL("image/jpeg",.65);
+      document.getElementById(imgId).style.display="block";
+      document.getElementById(phId).style.display="none";
+    };img.src=e.target.result;
+  };reader.readAsDataURL(f);
+}
+
+async function apiPost(data){
+  const r=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data),redirect:"follow"});
+  if(!r.ok)throw new Error("Network error "+r.status);
+  const text=await r.text();
+  try{return JSON.parse(text);}catch(e){return{success:true,message:"Saved"};}
+}
+async function apiGet(params){
+  const r=await fetch(SCRIPT_URL+"?"+new URLSearchParams(params).toString(),{redirect:"follow"});
+  if(!r.ok)throw new Error("Network error "+r.status);
+  const text=await r.text();
+  try{return JSON.parse(text);}catch(e){return[];}
+}
+
+function setBtn(id,loading,label){
+  const b=document.getElementById(id);b.disabled=loading;
+  b.innerHTML=loading?`<div class="spin"></div> Saving...`:label;
+}
+function showAlert(id,msg){
+  const el=document.getElementById(id);
+  document.getElementById(id+"-m").textContent=msg;
+  el.classList.add("on");setTimeout(()=>el.classList.remove("on"),7000);
+}
+
+async function doCI(){
+  const emp=document.getElementById("ci-emp").value.trim();
+  const time=document.getElementById("ci-time").value;
+  const site=document.getElementById("ci-site").value;
+  const gps=document.getElementById("ci-gps").value;
+  const photoSrc=document.getElementById("ci-pi").src;
+  const hasPhoto=document.getElementById("ci-pi").style.display==="block"&&photoSrc&&photoSrc.startsWith("data:");
+  if(!emp)return alert("Please enter your name");
+  if(!site)return alert("Please select your work site");
+  const role=document.getElementById("ci-role").value;
+  if(!role)return alert("Please select your role (Employee or Candidate)");
+  if(!gps||gps.includes("Getting"))return alert("Please tap the GPS Capture button first");
+  if(!hasPhoto){
+    const szn=document.getElementById("ci-szn");
+    szn.classList.add("missing");
+    setTimeout(()=>szn.classList.remove("missing"),1000);
+    return alert("📸 Selfie photo is mandatory.\nPlease tap the photo area to take a selfie.");
+  }
+  // ONE CHECK-IN PER DAY
+  if(alreadyCI(emp))return alert("You have already checked in today.\nOnly one check-in per day is allowed.");
+  // CANDIDATES always get guest location (allowed outside zone)
+  const isCandidate = role === "candidate";
+  const isGuest = isCandidate || window._guestLoc === true;
+  const status = "present"; // always present if GPS captured (inside = normal, outside = guest)
+  const isLate = time>"09:30";
+  setBtn("ci-btn",true,"SUBMIT CHECK-IN");showNet("saving","Saving...");
+  try{
+    const res=await apiPost({action:"checkin",emp_name:emp,role,site,checkin_time:time,gps,
+      lat:window._lat||null,lng:window._lng||null,
+      in_zone:!isGuest,zone_name:window._zoneName||"",
+      distance_meters:window._distance||0,
+      guest_location:isGuest,status_override:status,
+      photo:photoSrc});
+    setBtn("ci-btn",false,"SUBMIT CHECK-IN");
+    if(res.success||res.message){
+      markCI(emp); // save to localStorage — prevent second check-in today
+      const label=isGuest?"PRESENT ⚠ (guest location)":"PRESENT ✓";
+      showAlert("ci-ok",`${emp} · ${site} · ${time}${isLate?" · LATE ⚠":""} · ${label}`);
+      showNet("ok","Saved to Google Sheet ✓",true);
+      updStatus(emp,time,"present",isLate,isGuest);
+    }else{showAlert("ci-er",res.error||"Error saving");showNet("err","Save failed");}
+  }catch(err){
+    setBtn("ci-btn",false,"SUBMIT CHECK-IN");
+    showAlert("ci-er","Cannot reach server. Check internet.\n"+err.message);
+    showNet("err","Connection failed");
+  }
+}
+
+async function doCO(){
+  const emp=document.getElementById("co-emp").value.trim();
+  const time=document.getElementById("co-time").value;
+  const gps=document.getElementById("co-gps").value;
+  const photoSrc=document.getElementById("co-pi").src;
+  const hasPhoto=document.getElementById("co-pi").style.display==="block"&&photoSrc&&photoSrc.startsWith("data:");
+  if(!emp)return alert("Please enter your name");
+  if(!gps||gps.includes("Getting"))return alert("Please capture GPS first");
+  if(!hasPhoto){
+    const szn=document.getElementById("co-szn");
+    szn.classList.add("missing");
+    setTimeout(()=>szn.classList.remove("missing"),1000);
+    return alert("📸 Selfie photo is mandatory.\nPlease tap the photo area to take a selfie.");
+  }
+  // ONE CHECK-OUT PER DAY
+  if(alreadyCO(emp))return alert("You have already checked out today.\nOnly one check-out per day is allowed.");
+  setBtn("co-btn",true,"SUBMIT CHECK-OUT");showNet("saving","Saving...");
+  try{
+    const res=await apiPost({action:"checkout",emp_name:emp,checkout_time:time,gps,tasks_assigned:document.getElementById("co-ta").value,tasks_completed:document.getElementById("co-tc").value,notes:document.getElementById("co-nt").value,photo:photoSrc});
+    setBtn("co-btn",false,"SUBMIT CHECK-OUT");
+    if(res.success||res.message){
+      markCO(emp); // save to localStorage — prevent second check-out today
+      showAlert("co-ok",res.message||`${emp} checked out at ${time}`);showNet("ok","Saved ✓",true);
+      if(res.work_hours>0){document.getElementById("hval").textContent=`${res.work_hours} hours worked today`;document.getElementById("bfl").style.width=Math.min(res.work_hours/8*100,100)+"%";document.getElementById("hbar").style.display="block";}
+      document.getElementById("sc").className="sc done";document.getElementById("sdot").className="sdot done";
+      document.getElementById("slbl").textContent=`${emp} — Day complete`;
+      document.getElementById("ssub").textContent=`Out: ${time}${res.work_hours?" · "+res.work_hours+"h":""}`;
+      const b=document.getElementById("sbadge");b.className="sbadge b-done";b.textContent="DONE";
+    }else{showAlert("co-er",res.error||"Error");showNet("err","Save failed");}
+  }catch(err){setBtn("co-btn",false,"SUBMIT CHECK-OUT");showAlert("co-er","Cannot reach server. "+err.message);showNet("err","Connection failed");}
+}
+
+async function loadHist(){
+  const emp=document.getElementById("ht-emp").value.trim();if(!emp)return;
+  const el=document.getElementById("ht-list");
+  el.innerHTML=Array(4).fill('<div class="skel"></div>').join("");
+  try{
+    const rows=await apiGet({action:"getHistory",emp});
+    if(!rows.length){el.innerHTML='<div class="empty">No records found yet</div>';return;}
+    el.innerHTML=rows.map(r=>{
+      const cls=r.status==="present"?"p":r.status==="absent"?"a":"d";
+      return`<div class="hrow"><div><div class="hd">${r.log_date}</div><div class="ht">In: ${r.checkin_time||"--"} &middot; Out: ${r.checkout_time||"--"}${r.work_hours>0?" &middot; "+r.work_hours+"h":""}</div></div><div style="text-align:right"><div class="hs ${cls}">${(r.status||"").toUpperCase()}</div>${r.is_late?'<div style="font-size:9px;color:#92400E;font-weight:700">LATE</div>':""}</div></div>`;
+    }).join("");
+  }catch(err){el.innerHTML=`<div class="empty">Error: ${err.message}</div>`;}
+}
+
+function updStatus(emp,time,status,isLate,isGuest){
+  document.getElementById("sc").className="sc present"; // always present if GPS captured
+  document.getElementById("sdot").className="sdot present";
+  document.getElementById("slbl").textContent=`${emp} — checked in at ${time}${isLate?" (Late)":""}${isGuest?" ⚠":""}`;
+  document.getElementById("ssub").textContent=isGuest?"⚠ Guest location — PRESENT (manager notified)":"✅ At work site — PRESENT";
+  const b=document.getElementById("sbadge");
+  b.className="sbadge "+(isGuest?"b-late":(isLate?"b-late":"b-present"));
+  b.textContent=isGuest?"GUEST":(isLate?"LATE":"PRESENT");
+}
+
+function onRoleChange(){
+  const role=document.getElementById("ci-role").value;
+  document.getElementById("ci-candidate-note").style.display=role==="candidate"?"block":"none";
+  // If candidate is selected and GPS already captured outside zone, update banner
+  if(role==="candidate"&&window._guestLoc){
+    showLocBanner("guest",window._zoneName||"work site",window._distance||0);
+  }
+}
+
+populateDropdowns();
+</script>
+</body>
+</html>
